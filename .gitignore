@@ -1,0 +1,11 @@
+*.csv
+*.xlsx
+*.xls
+*pdf
+*log
+*.aux
+*.out
+*.toc
+*.png
+*.snm
+*.nav
