@@ -1,0 +1,5 @@
+rm(list = ls())
+source("0-ED_data_clean.R")
+source("1-compute_otm_IVs.R")
+source("2-compute_mpu_spline.R")
+source("3-interpolate_mpu.R")
