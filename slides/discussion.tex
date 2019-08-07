@@ -1,0 +1,191 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Beamer Presentation
+% LaTeX Template
+% Version 1.0 (10/11/12)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND THEMES
+%----------------------------------------------------------------------------------------
+
+\documentclass{beamer}
+
+\mode<presentation> {
+
+% The Beamer class comes with a number of default slide themes
+% which change the colors and layouts of slides. Below this is a list
+% of all the themes, uncomment each in turn to see what they look like.
+
+%\usetheme{default}
+%\usetheme{AnnArbor}
+%\usetheme{Antibes}
+%\usetheme{Bergen}
+%\usetheme{Berkeley}
+%\usetheme{Berlin}
+%\usetheme{Boadilla}
+%\usetheme{CambridgeUS}
+%\usetheme{Copenhagen}
+%\usetheme{Darmstadt}
+%\usetheme{Dresden}
+%\usetheme{Frankfurt}
+%\usetheme{Goettingen}
+%\usetheme{Hannover}
+%\usetheme{Ilmenau}
+%\usetheme{JuanLesPins}
+%\usetheme{Luebeck}
+\usetheme{Madrid}
+%\usetheme{Malmoe}
+%\usetheme{Marburg}
+%\usetheme{Montpellier}
+%\usetheme{PaloAlto}
+%\usetheme{Pittsburgh}
+%\usetheme{Rochester}
+%\usetheme{Singapore}
+%\usetheme{Szeged}
+%\usetheme{Warsaw}
+
+% As well as themes, the Beamer class has a number of color themes
+% for any slide theme. Uncomment each of these in turn to see how it
+% changes the colors of your current slide theme.
+
+%\usecolortheme{albatross}
+%\usecolortheme{beaver}
+%\usecolortheme{beetle}
+%\usecolortheme{crane}
+%\usecolortheme{dolphin}
+%\usecolortheme{dove}
+%\usecolortheme{fly}
+%\usecolortheme{lily}
+%\usecolortheme{orchid}
+%\usecolortheme{rose}
+%\usecolortheme{seagull}
+%\usecolortheme{seahorse}
+%\usecolortheme{whale}
+%\usecolortheme{wolverine}
+
+%\setbeamertemplate{footline} % To remove the footer line in all slides uncomment this line
+%\setbeamertemplate{footline}[page number] % To replace the footer line in all slides with a simple slide count uncomment this line
+
+%\setbeamertemplate{navigation symbols}{} % To remove the navigation symbols from the bottom of all slides uncomment this line
+}
+
+\usepackage{graphicx} % Allows including images
+\usepackage{booktabs} % Allows the use of \toprule, \midrule and \bottomrule in tables
+
+%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+%----------------------------------------------------------------------------------------
+
+\title[]{Discussion of First Year Paper} % The short title appears at the bottom of every slide, the full title is only on the title page
+
+\author{Patrick Shultz} % Your name
+
+\date{\today} % Date, can be changed to a custom date
+
+\begin{document}
+
+%\begin{frame}
+%\titlepage % Print the title page as the first slide
+%\end{frame}
+
+%----------------------------------------------------------------------------------------
+%	PRESENTATION SLIDES
+%----------------------------------------------------------------------------------------
+
+%------------------------------------------------
+\section{First Section} % Sections can be created in order to organize your presentation into discrete blocks, all sections and subsections are automatically printed in the table of contents as an overview of the talk
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{General Idea/Question}
+\begin{itemize}
+\item What is the role of monetary policy uncertainty for the transmission of FOMC actions?  More broadly, what are the economic and financial effects of monetary policy uncertainty?
+\item Goals
+\begin{itemize}
+	\item Use options on Eurodollar futures to construct a measure of monetary policy uncertainty. 
+	\item Investigate the effect on asset prices through an event study around days of FOMC announcements. 
+	\item Would it be interesting to take more of a corporate finance rather than asset pricing approach? For example, is there a way to look at the effect of uncertainty on long term R\&D investment decisions or lending standard of banks? 
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Data}
+\begin{itemize}
+	\item Quarterly Eurodollar futures contracts with expirations every March, June, September, and December and the corresponding puts and calls.
+	\item The options on Eurodollar futures are among the most actively traded Exchange-listed Interest Rate options in the world. 
+	\item The payoffs of these contracts are tied to the three-month LIBOR rate. 
+	\item Data is available on Bloomberg from 2011-today. In total, I have data on 38 futures contracts. 
+	\item Each observation is the closing price from CME
+\end{itemize}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Measurement of the variance}
+\begin{itemize}
+	\item Key result: the risk-netural variance of the level of LIBOR is pinned down by out of the money puts and calls on Eurodollar futures.  
+	\item Bauer, Lakdawala, and Mueller (2019) show:
+	\begin{equation}
+		Var_{t}(L_{T}) = \dfrac{2}{P_{t, T}}\left(\int_{0}^{F_{t, T}}p(K)dK + \int_{F_{t, T}}^{\infty} c(K) dK\right)
+	\end{equation}
+	where $L_{t}$ is the LIBOR, $F_{t, T}$ is the price of the futures contract, $P_{t, T}$ is the zero coupon bond price, and $c(K)$ and $p(K)$ are the time-$t$ prices of calls and puts with strike $K$. 
+	\item Empirically, this essentially comes down to estimating the terms in the integrals each trading day. 
+\end{itemize}
+\end{frame}
+
+%------------------------------------------------
+\begin{frame}
+\frametitle{Daily fit of options prices}
+\begin{itemize}
+	\item First, convert prices into implied volatilities using Black-Scholes. Second, fit a polynomial to the implied volatilities. Third, map the volatility curve back into price space. 
+	\begin{figure}
+		\centering
+		\includegraphics[scale=0.4]{example_of_spline.png}
+	\end{figure}
+\end{itemize}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Example of monetary policy uncertainty implied by a specific contract}
+		\begin{figure}
+		\centering
+		\includegraphics[scale=0.4]{mpu_example.png}
+	\end{figure}
+After constructing a time series of the variance implied by each contract, I linearly interpolate between contracts to construct a measure with a fixed maturity. 
+\end{frame}
+
+%------------------------------------------------
+\begin{frame}
+\frametitle{Monetary Policy Uncertainty at Fixed Horizons}
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.35]{mpu.png}
+	\caption{Risk-neutral standard deviation of three-month LIBOR rate at horizons of 0.5, 1, 1.5, 2, 2.5 years, estimated from Eurodollar futures and options. Sample period: 2011-10-18 to 2019-07-19.}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Where to go from here...}
+	\begin{itemize}
+		\item What is the effect of the second moment of a interest rate policy on first moment movements of it? If the Fed cuts interest rates, will it have a larger effect if uncertainty is low? If uncertainty is high, will firms/banks still wait to invest even though rates are lower? \item I can obtain similar data for Japan and Europe (however the quality/sample size of this data is untested) and could look at how uncertainty increases in the the Fed's policy spillover to another country. 
+		\item Or implement methodologies similar to event studies around federal funds rate shocks, where I would be looking at unanticipated changes in the variance around the policy tool rather than the changes in the policy tool itself. 
+		
+	\end{itemize}
+\end{frame}
+
+\end{document} 
