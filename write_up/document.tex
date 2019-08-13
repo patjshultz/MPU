@@ -1,0 +1,137 @@
+\title{\textbf{Monetary Policy and Short Term Interest Rate Uncertainty}}
+\author{
+        Patrick Shultz\\
+        The Wharton School at the University of Pennsylvania
+}
+\date{\today}
+
+\documentclass[11pt]{article}
+\usepackage{amsmath}
+\usepackage{graphicx} % Allows including images
+\usepackage[margin=1in]{geometry}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+ Theory suggests that aggregate economic activity is just as much, if not more, a function of agents' uncertainty as it is about the levels. Hence, a key question for policymakers is the effect of their decisions on second moments of agents' expectations. This paper focuses the post crisis period to investigate the effect of FOMC announcements on the pass through of monetary policy  to short term interest rate uncertainty. Specifically, I implement and test the robustness of a daily measure of the risk-neutral conditional variance of the \textit{level} of LIBOR. Second, I implement an event study of the effect of announcements on uncertainty and financial markets. 
+\end{abstract}
+
+\section{Introduction}
+Ingersoll and Ross (1992)  show that aggregate investment is dependent on uncertainty around interest rates, not only the level. Under the (strong) assumption that investment is totally irreversible, the value of a project in place is simply the expected present value of the stream of profits it would generate. This can be computed in terms of the underlying uncertainty (ch. 5-7 of Pindyck). Once we understand why and how firms should be cautious when deciding whether to exercise their investment options, we seek to understand why interest rates have so little effect on investment. Why do interest rate cuts tend to have a limited stimulative effect on investment?Page 14: Uncertainty about the future path of interest rates may also affect inverstment more than the general level of the interest rates. Hence, it is important to derive an empirical measure of uncertainty. 
+
+The risk-neutral measure of $Var_{t}(L_{T})$ has three components:
+\begin{itemize}
+	\item First, it captures uncertainty around short term lending rates. 
+	\item Second, it reflects uncertainty around credit risk due to the underlying being LIBOR rather than OIS. Sepcifically, it captures uncertainty regarding the LIBOR-OIS spread, which is a common benchmark for financial health.  
+	\item Third, the measure captures a variance risk-premium in addition to ``real-world" variance, since it is a ``risk-adjusted" measurement of variance. 
+\end{itemize}
+While I cannot disentangle which component of this measure the Federal Reserve affects with monetary policy announcements, each component is an important part of the lending market and hence is interesting to study.  Using daily data, I investigate the behavior of this measure around 65 FOMC announcements.  
+
+\textit{Insert simple example of why interest rate uncertinaty matters}
+\section{Data}
+
+\section{LIBOR-OIS Spread}
+\textbf{LIBOR:} Represents the daily average rate that banks can charge one another in order to borrow cash overnight. It is an unsecured loan reflecting the creditworthiness of the bank borrowers. The world's largest lenders on the London Interbank Market create a daily average of their cost of funds, which is then reported as LIBOR. \\
+
+\noindent \textbf{The Overnight Interest Swap:} This rate represents the rate where high quality borrowers can swap a variable rate payment for a fixed rate or vice versa. The monthly payment settlements only represent the difference in the cash flows being exchanged, so there is no principal at risk. Credit risk is not a factor in determining the OIS rate. \\
+
+If LIBOR increases relative to the OIS rate, it means it is becoming more expensive for banks to borrow money from one another when compared to a near ''risk free" rate paid by high quality swappers in the OIS market.
+
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.5]{libor_ois.png}
+	\caption{LIBOR-OIS Spread, $\mu = 0.22$ and $\sigma = 0.11$}
+	\label{fig:libor_ois_spread}
+\end{figure}
+Why LIBORs? [1] LIBOR is the rate benchmark for \$200 trillion of dollar-denominated financial products. [2] Corporate bank lending floating rate loans have coupons indexed mostly to LIBOR. [3] Eurodollar options are substantially more liquid than options on federal funds rate futures and are among the most liquid interest rate options in the world. [4] The LIBOR-OIS spread is assumed to be a measure of the health of banks because it reflects what banks believe is the risk of default associatd with lending to other banks\footnote{see: https://files.stlouisfed.org/files/htdocs/publications/es/09/ES0924.pdf}.
+[5] LIBOR is the main reference rate in U.S. economy and as of 2016 outstanding business loans indexed to USD LIBOR amounted to 3.4 trillion, and for syndicated loans, amounting to 1.5 trillion and over 90\% of the overall volume.  (Jermann 2019), so it is natural to ask what is the affect of FOMC announcements on uncertainty around this rate. Hence, if we want a measure of interest rate uncertainty for the U.S. economy LIBOR is a more appropriate rate than the federal funds rate.  \\
+
+
+\paragraph{Liquidity of Fed Funds Futures Options Vs. Eurodollar Options}
+
+
+\section{Construction of Eurodollar based Uncertainty}\label{previous work}
+\begin{equation}
+\begin{split}
+Var_{t}(L_{T}) = Var_{t}(F_{T, T})= E_{t}F_{T, T}^{2}-(E_{t}F_{T, T})^{2}=E_{t}F_{T, T}^{2} - F_{t, T}^{2}
+\end{split}
+\label{eq:LIBOR_var}
+\end{equation}
+where $L_{t}$ is the LIBOR, $F_{t, T}$ is the forward LIBOR rate, and $L_{T} = F_{T, T}$. The first equality holds by arbitrage, the second equality holds by definition of variances, and the final equality holds because the forward rate is a martingale under the $T$-forward measure. 
+
+Using the $T$-forward measure implies the price $p_{t}$ of a future payoff $x_{T}$ is 
+\begin{equation*}
+	p_{t} = P_{t, T}E_{t}(x_{T})
+\end{equation*}
+where $P_{t, T}$ is the price of a zero-coupon bond maturing at time $T$. Next, we have that 
+\begin{equation}
+E_{t}F_{T, T}^{2} = 2 \int_{0}^{\infty}E_{t}\max(0, F_{T, T}-K)dK = \dfrac{2}{P_{t, T}}\int_{0}^{\infty} c(K)dK
+\label{eq:option_identity}
+\end{equation}
+where $c(K) = P_{t, T}E_{t}\max(0, F_{T, T}-K)$ is the time-$t$ price of a call option with strike $K$. 
+Plugging Equation \ref{eq:option_identity} into Equation \ref{eq:LIBOR_var} yields 
+\begin{equation}
+\begin{split}
+Var_{t}(L_{T}) &= \dfrac{2}{P_{t, T}}\left(\int_{0}^{F_{t, T}}p(K) + \int_{F_{t, T}}^{\infty}c(K)\right)\\
+&=2 \int_{0}^{\infty}\left[\dfrac{c(K)}{P_{t, T}}- \max(0, F_{t, T}-K)\right]dK
+\end{split}
+\label{eq:oom_expression}
+\end{equation}
+The first equality shows that the risk-neutral variance can be written as a function of out-of-the-money puts and calls. Importantly, this volatility is a measure of uncertainty around the level of short term interest rates, not on the return of a Eurodollar futures contract.\\
+
+While this measure clearly must reflect uncertainty around monetary policy, it must also contain information about risk and risk aversion. Hence, it is not clear if increases in this measure are due to uncertainty around future policy rates or increasing risk aversion to unexpected changes in policy. 
+
+\textit{Measuring }
+\subsection{Empirical Implementation}
+\begin{enumerate}
+	\item Select out-of-the-money put and call contracts and collect closing prices
+	\item Calculate the risk free interest rate and $P_{t, T}$ based on the zero-coupon yield curve of GSW. 
+	\item Translate observed option prices into IVs, fit a cubic spline to IVs, and map IVs back to prices to obtain a smooth estimate of $c(K)$.
+	\item Numerically calculate Equation \ref{eq:oom_expression} using the trapezoidal rule over a grid of 60 strikes. The square root is then an estimate of the standard of the LIBOR rate at the expiration of the contract.
+\end{enumerate}
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.6]{../figures/mpu.png}
+	\caption{Estimates of MPU for horizons of 0.5, 1, 1.5, 2, 2.5 years}
+	\label{fig:mpu}
+\end{figure}
+\section{Comparison to other interest rate uncertainty measures}\label{results}
+https://www.policyuncertainty.com/monetary.html\\
+https://www.sciencedirect.com/science/article/pii/S0261560617301365?via%3Dihub#f0020\\
+https://www.philadelphiafed.org/research-and-data/real-time-center/survey-of-professional-forecasters
+\section{FOMC announcements}
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.6]{../figures/fomc_days_change.png}
+	\caption{Percent change in LIBOR uncertainty on FOMC announcement days}
+	\label{fig:fomc_days}
+\end{figure}
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.6]{../figures/mpu_diff_fomc.png}
+	\caption{Percent change in LIBOR uncertainty relative to day prior to FOMC announcements}
+	\label{fig:fomc_cycle_chg}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.6]{../figures/term_premium_responses.png}
+	\caption{Coefficients and confidence intervals for regression of $\Delta TP = \alpha + \beta \Delta mpu$}
+	\label{fig:term_premium_responses}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.6]{../figures/term_premium_responses_fomc.png}
+	\caption{Coefficients and confidence intervals for regression of $\Delta TP = \alpha + \beta \Delta mpu$ only on FOMC announcement days}
+	\label{fig:term_premium_responses_fomc}
+\end{figure}
+\section{Local Projections}
+\section{Conclusions}\label{conclusions}
+I worked hard, and achieved very little.
+
+
+\end{document}
+This is never printed

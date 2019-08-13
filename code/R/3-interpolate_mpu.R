@@ -4,7 +4,8 @@
 #===============================================================================
 rm(list = ls())
 library(tidyverse)
-
+library(dplyr)
+loadfonts()
 # load data
 mpu_data <- read_csv("../../data/contracts_mpu.csv")
 dates <- unique(mpu_data$date)
@@ -59,11 +60,32 @@ df_long <- na.omit(df_long)
 max_mpu <- max(df_long$value)
 
 
+
 ggplot(df_long, aes(x = date, y = value, colour = variable)) + ylim(0, 2) +
-  geom_line(size = 1.25) + scale_colour_grey() + 
+  geom_line(size = 1.25) + #scale_colour_grey() + 
   xlab("") + ylab("Percent")+ 
-  theme(legend.title = element_blank()) 
+  theme(legend.title = element_blank(), text = element_text(size = 20, family = "Times New Roman"))
 
 ggsave(paste("../../figures/mpu", "png", sep = "."), width = 10, height = 6)
 ggsave(paste("../../slides/mpu", "png", sep = "."), width = 10, height = 6)
 write_csv(x = df, path = "../../data/tau_mpu.csv")
+
+#---------------------------------------------# 
+#changes in mpu
+#---------------------------------------------
+
+df <- data.frame(date = dates[-1], diff(mpu_mat))
+colnames(df) <- c("date", paste("X", round(taus, 1), sep = ""))
+df_long <- melt(df[-(1:10), ], id.vars = "date")
+df_long <- na.omit(df_long)
+
+df %>% mutate(monthyear = as.character(format(date, "%m-%Y"))) %>%
+  arrange(date) %>%
+  group_by(monthyear) %>%
+  summarise(date=date[1], flow = sum(2))
+
+ggplot(df_long, aes(x = date, y = value, colour = variable)) + 
+  geom_line(size = 1.25) + 
+  xlab("") + ylab("Percent")+ 
+  theme(legend.title = element_blank(), text = element_text(size = 20, family = "Times New Roman"))
+

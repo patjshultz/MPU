@@ -262,3 +262,69 @@ fit_spline <- function(coef, strike.grid, order){
 }
 
 
+
+rep.row<-function(x,n){
+  matrix(rep(x,each=n),nrow=n)
+} 
+
+
+
+calc_mpu_change <- function(mpu_data, fomc_dates, tau_delta){
+  # mpu_data: data frame containing the mpu data at various horizons
+  # fomc_dates : vectorfomc dates
+  # tau delta is the difference in days between the observation and the day prior to FOMC meetings
+  
+  # create empty matrix to store calculations in 
+  n_meetings <- length(fomc_dates)
+  mpu_change <- matrix(data = 0, nrow = n_meetings, ncol = (ncol(mpu_data)-1))
+  print(tau_delta)
+  for (i in 1:n_meetings) {
+    
+    # pick fomc date
+    fomc_date <- fomc_dates[i]
+    
+    # find the lead and lag dates in the mpu data
+    fomc_tau <- which(mpu_dates == fomc_date) 
+    delta_mpu <- as.matrix(mpu[fomc_tau, - 1] - mpu[(fomc_tau - tau_delta), -1])
+    mpu_change[i, ] <- delta_mpu
+  }
+  
+  mpu_change <- as.data.frame(data.frame(date = fomc_dates, mpu_change))
+  colnames(mpu_change) <- colnames(mpu)
+  return(mpu_change)
+}
+get_col_mean <- function(X){
+  colMeans(X[, -1], na.rm = T)
+}
+
+
+calc_diff_ts <- function(df) {
+  #df: data frame with the first column as a date
+  df_diff <- diff(as.matrix(df[, -1]))
+  df_diff <- data.frame(date = df$date[-1], df_diff)
+  colnames(df_diff) <- colnames(df)
+  return(df_diff)
+}
+
+
+get_term_premium_regression <- function(mpu_tau, term_premium){
+  # mpu_tau: horizon of mpu
+  # termp_premium: matrix containing term premium of 1-10 years
+  
+  coef_mat <- matrix(data = NA, nrow = 10, ncol = 4)
+  coef_mat[, 1] <- 1:10
+  
+  for(i in 1:10){
+    beta <- coef(summary(lm(term_premium[,  i] ~ mpu_tau)))["mpu_tau", "Estimate"] 
+    std.error <- coef(summary(lm(term_premium[,  i] ~ mpu_tau)))["mpu_tau", "Std. Error"]
+    
+    coef_mat[i, 2] <- beta
+    coef_mat[i, 3] <- beta - 1.96 * std.error
+    coef_mat[i, 4] <- beta + 1.96 * std.error
+    
+  }
+  colnames(coef_mat) <- c("Horizon", "Beta", "CILB", "CIUB")
+  return(as.data.frame(coef_mat))
+  
+}
+
