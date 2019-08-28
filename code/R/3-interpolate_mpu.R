@@ -5,7 +5,7 @@
 rm(list = ls())
 library(tidyverse)
 library(dplyr)
-loadfonts()
+#loadfonts()
 # load data
 mpu_data <- read_csv("../../data/contracts_mpu.csv")
 dates <- unique(mpu_data$date)
@@ -62,7 +62,7 @@ max_mpu <- max(df_long$value)
 
 
 ggplot(df_long, aes(x = date, y = value, colour = variable)) + ylim(0, 2) +
-  geom_line(size = 1.25) + #scale_colour_grey() + 
+  geom_line(size = 1.25) + scale_colour_grey() + 
   xlab("") + ylab("Percent")+ 
   theme(legend.title = element_blank(), text = element_text(size = 20, family = "Times New Roman"))
 

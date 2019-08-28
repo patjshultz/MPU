@@ -4,6 +4,7 @@
 rm(list = ls())
 library(tidyverse)
 library(extrafont)
+library(readxl)
 source("functions.R")
 #font_import()
 #loadfonts(device = "win")
@@ -28,6 +29,12 @@ event.dates <- as.Date(c("2012-01-25", "2012-09-13", "2012-12-12", "2013-06-19",
 # term premium data
 tp <- read_csv("../../data/term_premium.csv")
 
+# generic eurodollar data
+ed <- read_xlsx("../../data/ED_Generic_data.xlsx", na = "#N/A N/A", skip = 4)
+colnames(ed) <- c("date", paste("ED", 1:19, sep = ""))
+ed$date <- as.Date(ed$date)
+ed[, -1] <- 100 - ed[, -1]
+
 # daily changes in data
 
 mpu_diff <- calc_diff_ts(mpu)
@@ -35,6 +42,8 @@ mpu_diff_announcement <- mpu_diff[which(mpu_diff$date %in% event.dates), ]
 
 tp_diff <- calc_diff_ts(tp)
 tp_diff_announcement <- tp_diff[which(tp_diff$date %in% event.dates), ]
+
+ed_diff <- 
 
 #===============================================================================
 # Analyze the relationship between the term premium and mpu

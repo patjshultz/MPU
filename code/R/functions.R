@@ -278,6 +278,7 @@ calc_mpu_change <- function(mpu_data, fomc_dates, tau_delta){
   n_meetings <- length(fomc_dates)
   mpu_change <- matrix(data = 0, nrow = n_meetings, ncol = (ncol(mpu_data)-1))
   print(tau_delta)
+  mpu_dates <- mpu_data$date
   for (i in 1:n_meetings) {
     
     # pick fomc date
@@ -285,12 +286,12 @@ calc_mpu_change <- function(mpu_data, fomc_dates, tau_delta){
     
     # find the lead and lag dates in the mpu data
     fomc_tau <- which(mpu_dates == fomc_date) 
-    delta_mpu <- as.matrix(mpu[fomc_tau, - 1] - mpu[(fomc_tau - tau_delta), -1])
+    delta_mpu <- as.matrix(mpu_data[fomc_tau, - 1] - mpu_data[(fomc_tau - tau_delta), -1])
     mpu_change[i, ] <- delta_mpu
   }
   
   mpu_change <- as.data.frame(data.frame(date = fomc_dates, mpu_change))
-  colnames(mpu_change) <- colnames(mpu)
+  colnames(mpu_change) <- colnames(mpu_data)
   return(mpu_change)
 }
 get_col_mean <- function(X){
@@ -298,33 +299,123 @@ get_col_mean <- function(X){
 }
 
 
-calc_diff_ts <- function(df) {
+calc_diff_ts <- function(df, pch = F) {
   #df: data frame with the first column as a date
-  df_diff <- diff(as.matrix(df[, -1]))
-  df_diff <- data.frame(date = df$date[-1], df_diff)
-  colnames(df_diff) <- colnames(df)
+  
+  if (pch == F) {
+    df_diff <- diff(as.matrix(df[, -1]))
+    df_diff <- data.frame(date = df$date[-1], df_diff)
+    colnames(df_diff) <- colnames(df)
+  } else if (pch == T) {
+    df_diff <- diff(as.matrix(df[, -1]))
+    df_diff <- 100 * (df_diff / as.matrix(df[-nrow(df), -1])) 
+    df_diff <- data.frame(date = df$date[-1], df_diff)
+    colnames(df_diff) <- colnames(df)
+  }
+  
   return(df_diff)
+  
 }
 
 
-get_term_premium_regression <- function(mpu_tau, term_premium){
-  # mpu_tau: horizon of mpu
+get_term_premium_regression <- function(x, y, control, include.control = T){
+  # x: the independent variable
   # termp_premium: matrix containing term premium of 1-10 years
+  # control : additional regressors to be added to mpu
   
   coef_mat <- matrix(data = NA, nrow = 10, ncol = 4)
   coef_mat[, 1] <- 1:10
   
-  for(i in 1:10){
-    beta <- coef(summary(lm(term_premium[,  i] ~ mpu_tau)))["mpu_tau", "Estimate"] 
-    std.error <- coef(summary(lm(term_premium[,  i] ~ mpu_tau)))["mpu_tau", "Std. Error"]
-    
-    coef_mat[i, 2] <- beta
-    coef_mat[i, 3] <- beta - 1.96 * std.error
-    coef_mat[i, 4] <- beta + 1.96 * std.error
-    
+  if(include.control == T){
+    for(i in 1:10){
+      beta <- coef(summary(lm(y[,  i] ~ x + control)))["x", "Estimate"] 
+      std.error <- coef(summary(lm(y[,  i] ~ x + control)))["x", "Std. Error"]
+      
+      coef_mat[i, 2] <- beta
+      coef_mat[i, 3] <- beta - 1.96 * std.error
+      coef_mat[i, 4] <- beta + 1.96 * std.error
+      
+    }
+  } else if (include.control == F){
+    for(i in 1:10){
+      beta <- coef(summary(lm(y[,  i] ~ x)))["x", "Estimate"] 
+      std.error <- coef(summary(lm(y[,  i] ~ x)))["x", "Std. Error"]
+      
+      coef_mat[i, 2] <- beta
+      coef_mat[i, 3] <- beta - 1.96 * std.error
+      coef_mat[i, 4] <- beta + 1.96 * std.error
+      
+    }
   }
+ 
   colnames(coef_mat) <- c("Horizon", "Beta", "CILB", "CIUB")
   return(as.data.frame(coef_mat))
   
 }
 
+
+list_merge <- function(x, y){
+  return(merge(x, y, by = "date"))
+}
+
+get_eds_regression <- function(x, y, control, include.control = F){
+  # x: the independent variable normally eurodollar based surprises
+  # termp_premium: matrix containing term premium of 1-10 years
+  # control : additional regressors to be added to mpu normally left out in this specification
+  
+  coef_mat <- matrix(data = NA, nrow = 10, ncol = 4)
+  coef_mat[, 1] <- 1:10
+  
+  if(include.control == T){
+    for(i in 1:10){
+      beta <- coef(summary(lm(y[,  i] ~ x + control)))["x", "Estimate"] 
+      std.error <- coef(summary(lm(y[,  i] ~ x + control)))["x", "Std. Error"]
+      
+      coef_mat[i, 2] <- beta
+      coef_mat[i, 3] <- beta - 1.96 * std.error
+      coef_mat[i, 4] <- beta + 1.96 * std.error
+      
+    }
+  } else if (include.control == F){
+    for(i in 1:10){
+      beta <- coef(summary(lm(y[,  i] ~ x)))["x", "Estimate"] 
+      std.error <- coef(summary(lm(y[,  i] ~ x)))["x", "Std. Error"]
+      
+      coef_mat[i, 2] <- beta
+      coef_mat[i, 3] <- beta - 1.96 * std.error
+      coef_mat[i, 4] <- beta + 1.96 * std.error
+      
+    }
+  }
+  
+  colnames(coef_mat) <- c("Horizon", "Beta", "CILB", "CIUB")
+  return(as.data.frame(coef_mat))
+  
+}
+
+
+get.crash.prob <- function(strikes = strike.grid, put.prices=fitted.P.prices, alpha = 0.995, underlying.price = U, risk.free.rate = rf){
+  # calculate the "crash price of the eurodollar future
+  crash.strike <- alpha *  underlying.price
+  
+  # find the indices of prices around the crash price in the price grid
+  ind <- which(strike.grid > crash.strike)[1]
+  crash.strike.grid <- strike.grid[c(ind-1, ind)]
+  crash.price.ind <- c(ind-1, ind)
+  crash.prices.grid <- put.prices[crash.price.ind]
+  
+  # calculate weighted average crash price
+  weights <- 1 - 10 * abs(crash.strike.grid - crash.strike)
+  crash.price.weighted <- weights[1] * crash.prices.grid[1] + weights[2] * crash.prices.grid[2]
+  
+  # calculate the slope of the put price function around that point
+  dK <- diff(strike.grid)[1]
+  dP <- diff(crash.prices.grid)
+  put.prime <- dP / dK
+  risk.neutral.prob <- (1 + risk.free.rate) * put.prime
+  
+  # calculate crash probability
+  crash.prob <- alpha * (put.prime  - (crash.price.weighted / crash.strike))
+  return(100 *risk.neutral.prob)
+  
+}

@@ -104,14 +104,14 @@
 %------------------------------------------------
 
 \begin{frame}
-\frametitle{General Idea/Question}
+\frametitle{General Idea}
 \begin{itemize}
-\item What is the effect of monetary policy announcements on short term interest rate uncertainty? 
-\item Goals
-\begin{itemize}
-	\item Use options on Eurodollar futures to construct risk-neutral variance of LIBOR. 
-	\item Investigate the effect on asset prices through an event study around days of FOMC announcements. 
-\end{itemize}
+\item What is the role of uncertainty in the transmission of monetary policy to financial markets?
+
+
+
+\item I use options on Eurudollar futures contracts that allow me to investigate the effect of uncertainty from 2011-today. 
+
 \end{itemize}
 \end{frame}
 
@@ -121,10 +121,10 @@
 \frametitle{Data}
 \begin{itemize}
 	\item Quarterly Eurodollar futures contracts with expirations every March, June, September, and December and the corresponding puts and calls.
-	\item The options on Eurodollar futures are among the most actively traded Exchange-listed Interest Rate options in the world. 
+	\item Options on Eurodollar futures are among the most actively traded Exchange-listed Interest Rate options in the world. 
 	\item The payoffs of these contracts are tied to the three-month LIBOR rate. 
-	\item Data is available on Bloomberg from 2011-today. In total, I have data on 38 futures contracts. 
-	\item Each observation is the closing price from CME
+    
+
 \end{itemize}
 
 \end{frame}
@@ -132,12 +132,15 @@
 %------------------------------------------------
 
 \begin{frame}
-\frametitle{Measurement of the variance}
+\frametitle{Uncertainty measure}
 \begin{itemize}
-	\item Key result: the risk-netural variance of the level of LIBOR is pinned down by out of the money puts and calls on Eurodollar futures.  
-	\item Bauer, Lakdawala, and Mueller (2019) show:
+	\item The risk-neutral variance of the level of LIBOR is pinned down by out of the money puts and calls on Eurodollar futures.  
+	\item Bauer, Lakdawala, and Mueller (2019) claim:
 	\begin{equation}
-		Var_{t}(L_{T}) = \dfrac{2}{P_{t, T}}\left(\int_{0}^{F_{t, T}}p(K)dK + \int_{F_{t, T}}^{\infty} c(K) dK\right)
+	\begin{split}
+			Var_{t}(L_{T}) &= Var_{t}(F_{T, T}) = E_{t}F_{T, T}^{2} - (E_{t}F_{T, T})^{2} = E_{t}F_{T, T}^{2} - F_{t, T}^{2}\\
+			&= \dfrac{2}{P_{t, T}}\left(\int_{0}^{F_{t, T}}p(K)dK + \int_{F_{t, T}}^{\infty} c(K) dK\right)\\
+	\end{split}
 	\end{equation}
 	where $L_{t}$ is the LIBOR, $F_{t, T}$ is the price of the futures contract, $P_{t, T}$ is the zero coupon bond price, and $c(K)$ and $p(K)$ are the time-$t$ prices of calls and puts with strike $K$. 
 	\item Empirically, this essentially comes down to estimating the terms in the integrals each trading day. 
@@ -148,7 +151,7 @@
 \begin{frame}
 \frametitle{Daily fit of options prices}
 \begin{itemize}
-	\item First, convert prices into implied volatilities using Black-Scholes. Second, fit a polynomial to the implied volatilities. Third, map the volatility curve back into price space. 
+	\item First, convert prices into implied volatilities using Black-Scholes. Second, fit a cubic spline to the implied volatilities. Third, map the volatility curve back into price space. 
 	\begin{figure}
 		\centering
 		\includegraphics[scale=0.4]{example_of_spline.png}
@@ -159,17 +162,21 @@
 %------------------------------------------------
 
 \begin{frame}
-\frametitle{Example of monetary policy uncertainty implied by a specific contract}
-		\begin{figure}
-		\centering
-		\includegraphics[scale=0.4]{mpu_example.png}
-	\end{figure}
-After constructing a time series of the variance implied by each contract, I linearly interpolate between contracts to construct a measure with a fixed maturity. 
+\frametitle{What is this measuring?}
+	\begin{itemize}
+		\item Three main components:
+		\begin{enumerate}
+			\item Uncertainty around future monetary policy. 
+			\item Uncertainty around the LIBOR-OIS spread
+			\item A variance risk premium, since the construction of uncertainty is done under the risk neutral measure. 
+		\end{enumerate}
+	\item Changes in the LIBOR-OIS spread tend to be small (less than a basis point on average) on FOMC days, so movements in this measure around announcements are likely to be due to changes in uncertainty regarding monetary policy and the variance risk premium. 
+	\end{itemize}
 \end{frame}
 
 %------------------------------------------------
 \begin{frame}
-\frametitle{Monetary Policy Uncertainty at Fixed Horizons}
+\frametitle{Eurodollar based uncertainty (EDU) at Fixed Horizons}
 \begin{figure}
 	\centering
 	\includegraphics[scale=0.35]{mpu.png}
@@ -179,12 +186,23 @@ After constructing a time series of the variance implied by each contract, I lin
 \end{frame}
 
 \begin{frame}
-\frametitle{Where to go from here...}
-	\begin{itemize}
-		\item What is the effect of the second moment of a interest rate policy on first moment movements of it? If the Fed cuts interest rates, will it have a larger effect if uncertainty is low? If uncertainty is high, will firms/banks still wait to invest even though rates are lower? \item I can obtain similar data for Japan and Europe (however the quality/sample size of this data is untested) and could look at how uncertainty increases in the the Fed's policy spillover to another country. 
-		\item Or implement methodologies similar to event studies around federal funds rate shocks, where I would be looking at unanticipated changes in the variance around the policy tool rather than the changes in the policy tool itself. 
-		
-	\end{itemize}
+\frametitle{Response of EDU to FOMC announcements}
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.35]{../figures/mpu_diff_fomc.png}
+	\caption{Response to FOMC announcements. Vertical line starts at day prior to FOMC announcement}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Response of yields to EDU on FOMC days}
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.35]{../figures/yield_responses_US_fomc_control_v_no_control.png}
+	\caption{$\hat{\beta_{1}}$ from regression of the form $\Delta y_{t}^{(n)} = \alpha + \beta_{1} \Delta EDU_{t} + \beta_{2} \Delta EDS$. The left panel omits $\Delta EDS$ as a control. }
+\end{figure}
+
 \end{frame}
 
 \end{document} 

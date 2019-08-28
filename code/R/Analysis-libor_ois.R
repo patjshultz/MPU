@@ -1,3 +1,4 @@
+
 rm(list = ls())
 library(tidyverse)
 theme_set(theme_bw(base_size = 20))
@@ -5,6 +6,13 @@ theme_set(theme_bw(base_size = 20))
 
 data <- read_csv("../../data/libor_ois_spread.csv")
 data$date <- as.Date(data$date, format = "%m/%d/%Y")
+
+mpu <- read_csv("../../data/tau_mpu.csv")
+
+
+
+
+
 
 data_long <- reshape2::melt(data, id.vars = "date")
 data_spread <- data_long[which(data_long$variable == "Spread"), ]

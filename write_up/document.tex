@@ -1,4 +1,4 @@
-\title{\textbf{Monetary Policy and Short Term Interest Rate Uncertainty}}
+\title{\textbf{Interest Rate Uncertainty and Monetary Policy Pass-Through}}
 \author{
         Patrick Shultz\\
         The Wharton School at the University of Pennsylvania
@@ -7,18 +7,23 @@
 
 \documentclass[11pt]{article}
 \usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{xcolor}
+\usepackage{bbm}
+
 \usepackage{graphicx} % Allows including images
-\usepackage[margin=1in]{geometry}
+\usepackage[margin=1.25in]{geometry}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
- Theory suggests that aggregate economic activity is just as much, if not more, a function of agents' uncertainty as it is about the levels. Hence, a key question for policymakers is the effect of their decisions on second moments of agents' expectations. This paper focuses the post crisis period to investigate the effect of FOMC announcements on the pass through of monetary policy  to short term interest rate uncertainty. Specifically, I implement and test the robustness of a daily measure of the risk-neutral conditional variance of the \textit{level} of LIBOR. Second, I implement an event study of the effect of announcements on uncertainty and financial markets. 
+ Theory suggests that aggregate economic activity is not just a function levels of variables, but also of uncetainty around those levels. Hence, a key question for policymakers is the effect of uncertainty on their policy tools. This paper first implements a daily measure of the risk-neutral conditional variance of the \textit{level} of short term interest rates. Second, it established relationships between financial variables and interest rate uncertainty. Third, I implement an event study of the effect of announcements on uncertainty and financial markets. \\
+ 
 \end{abstract}
 
 \section{Introduction}
-Ingersoll and Ross (1992)  show that aggregate investment is dependent on uncertainty around interest rates, not only the level. Under the (strong) assumption that investment is totally irreversible, the value of a project in place is simply the expected present value of the stream of profits it would generate. This can be computed in terms of the underlying uncertainty (ch. 5-7 of Pindyck). Once we understand why and how firms should be cautious when deciding whether to exercise their investment options, we seek to understand why interest rates have so little effect on investment. Why do interest rate cuts tend to have a limited stimulative effect on investment?Page 14: Uncertainty about the future path of interest rates may also affect inverstment more than the general level of the interest rates. Hence, it is important to derive an empirical measure of uncertainty. 
+Even though the federal funds rate was held fixed between 0.0 and 0.25 from December 16, 2008 to December 16, 2015,   
 
 The risk-neutral measure of $Var_{t}(L_{T})$ has three components:
 \begin{itemize}
@@ -29,8 +34,29 @@ The risk-neutral measure of $Var_{t}(L_{T})$ has three components:
 While I cannot disentangle which component of this measure the Federal Reserve affects with monetary policy announcements, each component is an important part of the lending market and hence is interesting to study.  Using daily data, I investigate the behavior of this measure around 65 FOMC announcements.  
 
 \textit{Insert simple example of why interest rate uncertinaty matters}
-\section{Data}
+\section{Eurodollar Futures and Options}
+In this paper, I use prices of Eurodollar options and futures to construct an uncertainty measure. 
+\subsection{What are Eurodollar futures contracts?}
+These contracts are written directly on the 90 day LIBOR, as opposed to a traded asset. The Eurodollar futures rate with maturity $\tau$ is quoted as 
+\begin{equation*}
+	F_{t}(\tau) = 100 - f_{t}(\tau)
+\end{equation*}
+where $f_{t}(\tau)$ is future LIBOR rate. Since Eurodollars are U.S. dollar-denominated deposits held in banks outside of the United States, the price of the futures contract reflects the market's expectations of the 3-month U.S. dollar LIBOR interest rate anticipated on the settlemnet date of the contract. \footnote{Example: If an investor buys one Eurodollar futures contract at \%96.00 and the price rises to \$96.02, this corresponds to an implied settlement of LIBOR at \%3.98. The buyer of the contract will have made \$50 (two basis points $\times$ 25)}.\footnote{example: let's assume that on Sept. 1, the December eurodollar futures contract price was 96.00, implying an interest rate of \%4.0, and that at expiry in December the final closing price is \$95.00, reflecting an interest rate of \%5.00. Shorting eurodollar contracts would hedge this increase. Basically, the futures contracts just give the right to earn a rate on a deposit over a certain period of time. }. The final settlement of an expiring Eurodollar futures contract is determined by reference to the three-month LIBOR on the last trading day. Thus, movements in the Eurodollar futures market provide insight as to where market participants think LIBOR will be in the future.\\
 
+The mark-to-market feature of futures contracts implies that they do not have to be adjusted for the distoritions
+The futures prices, $f_{t}(\tau)$, is a martingale under the risk-neutral measure $\mathbb{Q}$, so we have the following relationship 
+\begin{equation*}
+	f_{t}(\tau) = E_{t}^{\mathbb{Q}}\left[L_{\tau}\right]
+\end{equation*}
+where $L_{T}$ is the LIBOR at time $T$ in the future. 
+\\
+
+\subsection{What are Eurodollar options? }
+ Options on Eurodollar futures are among the most actively traded in the world and have recently had a daily volme of FIXME X times the federal funds options market. Additionally, Eurodollar futures and options are available at longer maturities, making them more useful for this exercise. \\
+
+Per the CME: Eurodollar futures and options' averrage daily trading volume exceeds 4.14 million contracts (\$4 trillion notional), and open interest is over 50.21 million contracts (\$50 trillion notional) \footnote{see:https://www.cmegroup.com/education/articles-and-reports/whats-next-for-libor-eurodollar-futures.html }. \$160 trillion of financial obligations are based on USD LIBOR, including syndicated loans, home mortgages, student loans, retail bank deposits, structured products, OTC interest rate swaps, forward rate agreements, and OTC interbank cross-currency swaps. 
+
+ 
 \section{LIBOR-OIS Spread}
 \textbf{LIBOR:} Represents the daily average rate that banks can charge one another in order to borrow cash overnight. It is an unsecured loan reflecting the creditworthiness of the bank borrowers. The world's largest lenders on the London Interbank Market create a daily average of their cost of funds, which is then reported as LIBOR. \\
 
@@ -38,6 +64,13 @@ While I cannot disentangle which component of this measure the Federal Reserve a
 
 If LIBOR increases relative to the OIS rate, it means it is becoming more expensive for banks to borrow money from one another when compared to a near ''risk free" rate paid by high quality swappers in the OIS market.
 
+LIBOR OIS spread vs. MPU measure 
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.5]{../figures/libor_ois_scatter.png}
+	\caption{LIBOR-OIS Spread vs EDU measure. $\beta = -0.06, |t| = 0.554$}
+	\label{fig:spread_mpu}
+\end{figure}
 
 \begin{figure}
 	\centering
@@ -47,12 +80,27 @@ If LIBOR increases relative to the OIS rate, it means it is becoming more expens
 \end{figure}
 Why LIBORs? [1] LIBOR is the rate benchmark for \$200 trillion of dollar-denominated financial products. [2] Corporate bank lending floating rate loans have coupons indexed mostly to LIBOR. [3] Eurodollar options are substantially more liquid than options on federal funds rate futures and are among the most liquid interest rate options in the world. [4] The LIBOR-OIS spread is assumed to be a measure of the health of banks because it reflects what banks believe is the risk of default associatd with lending to other banks\footnote{see: https://files.stlouisfed.org/files/htdocs/publications/es/09/ES0924.pdf}.
 [5] LIBOR is the main reference rate in U.S. economy and as of 2016 outstanding business loans indexed to USD LIBOR amounted to 3.4 trillion, and for syndicated loans, amounting to 1.5 trillion and over 90\% of the overall volume.  (Jermann 2019), so it is natural to ask what is the affect of FOMC announcements on uncertainty around this rate. Hence, if we want a measure of interest rate uncertainty for the U.S. economy LIBOR is a more appropriate rate than the federal funds rate.  \\
+\subsection{Relationship between libor and the fed funds rate}
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.5]{../figures/libor_fed_funds.png}
+	\caption{Libor and the effective federal funds rate, $\rho = 0.99$}
+	\label{fig:libor_fed_funds_rate}
+\end{figure}
+
+\subsection{Liquidity of Fed Funds Futures Options Vs. Eurodollar Options}
 
 
-\paragraph{Liquidity of Fed Funds Futures Options Vs. Eurodollar Options}
-
-
-\section{Construction of Eurodollar based Uncertainty}\label{previous work}
+\section{Risk Neutral Variance}
+{\color{blue}I use asterisks to denote quantities calculated with risk-neutral probabilities and $M_{T}$ to denote the stochastic discount factor (SDF) that prices time $T$ payoffs from the perspective of time $t$. We can price any payoff $X_{T}$ with either the SDF or by computing the risk-neutral probabilities and discounting at the gross riskless rate, $R_{f, t}$. In the SDF notation, we have 
+\begin{equation*}
+	P_{t} = E\left[M_{t}X_{T}\right]
+\end{equation*}
+and in risk neutral notation, we have 
+\begin{equation*}
+	P_{t} = \dfrac{1}{R_{f,t}}E^{*}X_{T}
+\end{equation*}} 
+The conditional risk-neutral variance of the level of LIBOR is given by  
 \begin{equation}
 \begin{split}
 Var_{t}(L_{T}) = Var_{t}(F_{T, T})= E_{t}F_{T, T}^{2}-(E_{t}F_{T, T})^{2}=E_{t}F_{T, T}^{2} - F_{t, T}^{2}
@@ -97,11 +145,10 @@ While this measure clearly must reflect uncertainty around monetary policy, it m
 	\caption{Estimates of MPU for horizons of 0.5, 1, 1.5, 2, 2.5 years}
 	\label{fig:mpu}
 \end{figure}
-\section{Comparison to other interest rate uncertainty measures}\label{results}
-https://www.policyuncertainty.com/monetary.html\\
-https://www.sciencedirect.com/science/article/pii/S0261560617301365?via%3Dihub#f0020\\
-https://www.philadelphiafed.org/research-and-data/real-time-center/survey-of-professional-forecasters
+
 \section{FOMC announcements}
+
+Compare this to level shocks and check if I can make some sort of claim of two distinct channels of monetary policy. 
 \begin{figure}
 	\centering
 	\includegraphics[scale=0.6]{../figures/fomc_days_change.png}
@@ -128,7 +175,56 @@ https://www.philadelphiafed.org/research-and-data/real-time-center/survey-of-pro
 	\caption{Coefficients and confidence intervals for regression of $\Delta TP = \alpha + \beta \Delta mpu$ only on FOMC announcement days}
 	\label{fig:term_premium_responses_fomc}
 \end{figure}
-\section{Local Projections}
+\section{Campbell, Lo, MacKinlay Style Event Study}
+The general pattern of uncertainty around announcements suggests a profitable trading strategy of shorting straddles around announcements or going long in butterly portfolios. 
+\begin{equation*}
+	\eta_{it} = R_{it} - E \left[R_{it}|\mathcal{F}_{t-1}\right]
+\end{equation*}
+
+Observed shocks
+\begin{equation*}
+	y_{t} = \left[ED1_{t} ED8_{t} T10_{t}\right]'
+\end{equation*}
+Estimate VAR(p) 
+\begin{equation*}
+	\Delta y_{t} = A_{0} + \sum_{j=1}^{p}A_{j} \Delta y_{t-j}  + \eta_{t}
+\end{equation*}
+Orthogonalize $\eta$ 
+\begin{equation*}
+	\eta = H \epsilon
+\end{equation*}
+\section{Risk-Neutral probability of an interest rate hike}
+\textbf{Digital  price} Following gamma knife paper, we can compute risk-neutral expectations of the form
+\begin{equation*}
+	E_{t}^{*}\left[g(S_{T})\right]
+\end{equation*}
+for any random variable $S_{T}$ on which European options are traded. Specifically, we can use the option prices to calculate the risk-neutral distribution of $S_{T}$ as 
+\begin{equation*}
+	P_{t}^{*}\left(S_{T}\in\left[k, k+\delta\right]\right) = E_{t}^{*}\left(\textbf{1}_{S_{T}\in\left[k, k + \delta \right]}\right)
+\end{equation*}
+which we can evaluate by applying the Breeden-Litzenberger logic to the function $g(x) = \textbf{1}_{S_{T}\in\left[k, k + \delta \right]}$ 
+
+\section{Pricing digitial puts and deriving the risk neutral probabilities}
+I next consider the price of a digital put option, that is the price of a claim to \$1 paid if and only if $S_{T} < \alpha S_{t}$. Since the prices of Eurodollar futures contracts are inversely related to the expected interest rate at expiration, we can think of a decline in price as an increase in expected interest rates. We can think of this as the amount market participants are willing to pay to hedge a $1-\alpha$ increase in interest rates. By pricing digital puts, I am able to construct the risk-neutral probability of short term interest rates increasing by $\alpha$ percent.  
+
+
+ \begin{equation} 
+ 	dput_{t, T}(K) = lim_{\epsilon \rightarrow 0} \frac{put_{t, T}(K+\epsilon)-put_{t, T}(K)}{\epsilon} = put_{t, T}^{'}(K)
+ 	\label{eq:putprime}
+ \end{equation}
+ Furthermore, we can derive the risk-neutral probability of this event by 
+ \begin{equation}
+ 	dput_{t, T}(K) =  \dfrac{1}{R_{f, t\to T}} \mathbb{E}_{t}^{*}\textbf{1}_{S_{T} < \alpha S_{t}} = \dfrac{1}{R_{f, t\to T}}\mathbb{P}^{*}(S_{T}<\alpha S_{t})
+ 	\label{eq:digital_put_price}
+ \end{equation}
+ Combining Equations \ref{eq:putprime} and \ref{eq:digital_put_price}, we get that the risk neutral probability of the Eurodollar futures contract declining by $(1-\alpha) \%$ is given by 
+ \begin{equation*}
+ 	\mathbb{P}^{*}(S_{T}<\alpha S_{t}) = R_{f, t\to T}put_{t, T}'(K)
+ \end{equation*}
+ {\color{red} Does this actually predict interest rate hikes? i.e. test something along the lines of 
+ \begin{equation*}
+ 	\Delta LIBOR_{t, T} = \alpha + \beta rnpd_{t} + \epsilon_{t}
+\end{equation*}}
 \section{Conclusions}\label{conclusions}
 I worked hard, and achieved very little.
 
