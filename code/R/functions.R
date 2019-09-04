@@ -27,7 +27,7 @@ load_options <- function(){
     df$date <- as.Date(df$date, origin = "1899-12-30")
     df <- melt(data = df, id.vars = "date")
     df <- na.omit(df)
-   
+    
     # add a column for the expiration date
     con_ind <- which(expir$Contract == substr(tickers[i], 1, 4))
     expir_date <- as.Date(expir$Expiration[con_ind])
@@ -131,7 +131,7 @@ load_underlying <- function(){
   
   df <- read_excel(data_path, sheet = "underlying", skip = 3, trim_ws = T)
   nunderlying = ncol(df) / 2
-
+  
   for (j in 1:nunderlying) {
     ind <- 2 * j - 1
     underlying_data <- as.data.frame(df[-1, ind:(ind+1)])
@@ -139,7 +139,7 @@ load_underlying <- function(){
     contract <- colnames(underlying_data)[2]
     colnames(underlying_data) <- c("date", contract)
     underlying_data$date <- as.Date(underlying_data$date)
-
+    
     # trim NAs
     underlying_data <- na.omit(underlying_data)
     
@@ -258,6 +258,11 @@ fit_spline <- function(coef, strike.grid, order){
     return(coef[1] + coef[2] * X + coef[3] * X^2)
   } else if (order == 3) {
     return(coef[1] + coef[2] * X + coef[3] * X^2 + coef[4] * X^3)
+  } else if (order == 4) {
+    return(coef[1] + coef[2] * X + coef[3] * X^2 + coef[4] * X^3 + coef[5] * X^4)
+  } else if (order == 5) {
+    return(coef[1] + coef[2] * X + coef[3] * X^2 + coef[4] * X^3 + coef[5] * X^4 + coef[6] * X^5)
+    
   }
 }
 
@@ -347,7 +352,7 @@ get_term_premium_regression <- function(x, y, control, include.control = T){
       
     }
   }
- 
+  
   colnames(coef_mat) <- c("Horizon", "Beta", "CILB", "CIUB")
   return(as.data.frame(coef_mat))
   
@@ -419,3 +424,101 @@ get.crash.prob <- function(strikes = strike.grid, put.prices=fitted.P.prices, al
   return(100 *risk.neutral.prob)
   
 }
+
+
+
+lower.bound <-  function(strikes = strike.grid, call.prices = fitted.C.prices, lower.bound = U,
+                         upper.bound = 100, risk.free.rate = rf) {
+  
+  nstrikes <- length(strike.grid)
+  
+  # find the indices of prices around the the lower bound of pixel in the price grid
+  ind <- which(strike.grid > lower.bound)[1]
+  lb.lower.strikes <- strike.grid[c(ind-1, ind)]
+  lb.price.ind <- c(ind-1, ind)
+  lb.prices.grid <- call.prices[lb.price.ind]
+  
+  # calculate weighted average crash price
+  weights <- 1 - 10 * abs(lb.lower.strikes - lower.bound)
+  lb.price.weighted <- weights[1] * lb.prices.grid[1] + weights[2] * lb.prices.grid[2]
+  
+  # calculate the slope of the put price function around that point
+  dK <- diff(strike.grid)[1]
+  dP <- diff(lb.prices.grid)
+  lb.call.prime <- dP / dK
+  
+  # repeat, but for the upper bound of the pixel in the price grid
+  
+  dK <- diff(strike.grid)[1]
+  if(upper.bound == 100){
+    ub.prices.grid <- fitted.C.prices[c((nstrikes - 1), (nstrikes - 0))]
+    dP <- diff(ub.prices.grid)
+  } else {
+    # find the indices of prices around the the lower bound of pixel in the price grid
+    ind <- which(strike.grid > upper.bound)[1]
+    ub.lower.strikes <- strike.grid[c(ind-1, ind)]
+    ub.price.ind <- c(ind-1, ind)
+    ub.prices.grid <- call.prices[ub.price.ind]
+    
+    # calculate weighted average crash price
+    weights <- 1 - 10 * abs(ub.lower.strikes - upper.bound)
+    ub.price.weighted <- weights[1] * ub.prices.grid[1] + weights[2] * ub.prices.grid[2]
+    dP <- diff(ub.prices.grid)
+  }
+  
+  ub.call.prime <- dP / dK
+  
+  # lower bound prob <
+  lbi <- (1 + rf)  * (ub.call.prime - lb.call.prime)
+  
+  return(100 * lbi)
+}
+
+
+
+get.interpolated.variables <- function(data.long, tau.long = tau_long, taus){
+  interpolated_data_mat <- matrix(data = NA, nrow = nobs, ncol = length(taus))
+  for(tau in taus) {
+    tau.ind <- which(taus == tau)
+    for (i in 1:nobs) {
+      date <- dates[i]
+      contract.data.daily <- data.long[which(data.long$date == date),]
+      tau.data <- tau_long[which(tau_long$date == date),]
+      
+      # find the two security above an below tau
+      above_tau_ind <- min(which(tau.data$value > tau))
+      below_tau_ind <- max(which(tau.data$value <= tau))
+      
+      if(above_tau_ind == -Inf){
+        interpolated_data_mat[i, tau.ind] <- NA
+      } else if (below_tau_ind == -Inf) {
+        interpolated_data_mat[i, tau.ind] <- NA
+      } else {
+        # taus above and below
+        above_tau <- tau.data$value[above_tau_ind]
+        below_tau <- tau.data$value[below_tau_ind]
+        tau_diff <- above_tau - below_tau
+        
+        # which contracts are above and below tau
+        contract_above <- as.character(tau.data$variable)[above_tau_ind]
+        contract_below <- as.character(tau.data$variable)[below_tau_ind]
+        
+        prob_above <- contract.data.daily$value[which(as.character(contract.data.daily$variable) == contract_above)]
+        prob_below <- contract.data.daily$value[which(as.character(contract.data.daily$variable) == contract_below)]
+        
+        # calculate weights
+        weight_above <-  1- ((above_tau - tau) / tau_diff)
+        weight_below <- 1 - weight_above
+        
+        # create weighted average meaure 
+        weighted_prob <- weight_above * prob_above + weight_below * prob_below
+        interpolated_data_mat[i, tau.ind] <- weighted_prob
+      }
+    }
+  }
+  return(interpolated_data_mat)
+}
+
+
+ma <- function(x, n = 10){stats::filter(x, rep(1 / n, n), sides = 1)}
+

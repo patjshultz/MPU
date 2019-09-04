@@ -122,19 +122,34 @@ for (date in dates) {
     #-----------------------------------------
     
     # choose the strike grid
-    strike.grid <- seq(92, 101, by = 0.1)
+    strike.grid <- seq(92, 100, by = 0.1)
     
-    # fit a spline to the call prices
-    spline.C <- summary(lm(df.C$IV ~ df.C$X + I(df.C$X^2) + I(df.C$X^3)))
-    coef.C <- spline.C$coefficients[, "Estimate"]
-    fitted.C.IVs <-
-      fit_spline(coef.C, strike.grid = strike.grid, order = 3)
+    # # fit a spline to the call prices
+    # spline.C <- summary(lm(df.C$IV ~ df.C$X + I(df.C$X^2) + I(df.C$X^3)))
+    # coef.C <- spline.C$coefficients[, "Estimate"]
+    # fitted.C.IVs <-
+    #   fit_spline(coef.C, strike.grid = strike.grid, order = 3)
     
-    # fit spline to put prices
-    spline.P <- summary(lm(df.P$IV ~ df.P$X  + I(df.P$X^2) + I(df.P$X^3)))
-    coef.P <- spline.P$coefficients[, "Estimate"]
-    fitted.P.IVs <-
-      fit_spline(coef.P, strike.grid = strike.grid, order = 3)
+    # # fit spline to put prices
+    # spline.P <- summary(lm(df.P$IV ~ df.P$X  + I(df.P$X^2) + I(df.P$X^3)))
+    # coef.P <- spline.P$coefficients[, "Estimate"]
+    # fitted.P.IVs <-
+    #   fit_spline(coef.P, strike.grid = strike.grid, order = 3)
+    
+    
+    # use local polynomial regression instead of spline
+    x <- df.P$X
+    y <- df.P$IV
+    locpolyfit <-  locpoly(x, y, bandwidth = 1)  
+    fitted.P.IVs <-  locpolyfit$y
+    strike.grid <- locpolyfit$x
+    
+    # use local polynomial regression instead of spline
+    x <- df.C$X
+    y <- df.C$IV
+    locpolyfit <-  locpoly(x, y, bandwidth = 1)  
+    fitted.C.IVs <-  locpolyfit$y
+    strike.grid <- locpolyfit$x
     
     # convert back to prices
     fitted.C.prices <-
@@ -176,7 +191,13 @@ for (date in dates) {
     otm[which(otm < 0)] <- 0
     
     # numerically integrate the function
-    mpu <- sqrt((2 / zc.P) * sum(0.1 * otm))
+    strike.diff <- diff(strike.grid)[1]
+    mpu <- sqrt((2 / zc.P) * sum(strike.diff * otm)) # Bauer equivalent
+    rf < 1 +  (1 / zc.P)
+    #mpu <- ((2 * rf) / U) * sum(0.1 * otm) # SVIX equivalent 
+    #mpu <- 100 * (2 * rf) * sum(0.1 * (otm / strike.grid)) # VIX equivalent 
+    
+    
     mpu_list[[i]] <- c(date, con, tau, mpu)
     # adjust indices
     i <- i + 1

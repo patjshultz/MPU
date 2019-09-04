@@ -5,12 +5,14 @@
 rm(list = ls())
 library(tidyverse)
 library(dplyr)
-#loadfonts()
+library(extrafont)
+loadfonts()
+
 # load data
 mpu_data <- read_csv("../../data/contracts_mpu.csv")
 dates <- unique(mpu_data$date)
 nobs <- length(dates)
-taus <- c(0.5,1, 1.5, 2, 2.48)
+taus <- c(0.5 ,1, 1.5, 2, 2.48)
 
 #===============================================================================
 # loop through each date and find the tau year maturity
@@ -61,7 +63,7 @@ max_mpu <- max(df_long$value)
 
 
 
-ggplot(df_long, aes(x = date, y = value, colour = variable)) + ylim(0, 2) +
+ggplot(df_long, aes(x = date, y = value, colour = variable)) + #ylim(0, 2) +
   geom_line(size = 1.25) + scale_colour_grey() + 
   xlab("") + ylab("Percent")+ 
   theme(legend.title = element_blank(), text = element_text(size = 20, family = "Times New Roman"))
